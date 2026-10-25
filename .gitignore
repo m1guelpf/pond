@@ -76,6 +76,9 @@ apps/desktop/resources/bin/pond-native-host.exe
 # generated icon previews
 apps/desktop/src/renderer/src/generated/
 
+# video media pulled from a local library
+packages/video/videos/*/public/
+
 # Local caches, scratch files, and UI inspection captures
 .artifacts/
 .cache/
