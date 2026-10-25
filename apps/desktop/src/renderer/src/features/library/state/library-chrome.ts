@@ -52,7 +52,7 @@ function writeFlag(key: string, value: boolean): void {
   } catch {}
 }
 
-export type LibraryRightPane = "agent" | "inspector" | null;
+export type LibraryRightPane = "agent" | "inspector" | "review" | null;
 
 interface ChromeState {
   nav: LibraryNav;
@@ -64,13 +64,22 @@ interface ChromeState {
   inspectorTab: SaveInspectorTab;
   sidebarWidth: number;
   agentWidth: number;
+  /** Where the right column returns when a fish change review closes. */
+  reviewReturn: { rightOpen: boolean; rightPane: LibraryRightPane } | null;
 }
 
 function hasInspectorTarget(s: ChromeState): boolean {
   return s.inspectorSaveId != null;
 }
 
-function commitChrome(current: ChromeState, next: ChromeState): ChromeState {
+function commitChrome(
+  current: ChromeState,
+  proposed: ChromeState,
+): ChromeState {
+  const next =
+    proposed.rightPane === "review"
+      ? proposed
+      : { ...proposed, reviewReturn: null };
   if (
     current.rightOpen === next.rightOpen &&
     current.rightPane === next.rightPane &&
@@ -83,7 +92,8 @@ function commitChrome(current: ChromeState, next: ChromeState): ChromeState {
   if ((current.rightPane === null) !== (next.rightPane === null)) {
     beginLibraryLayoutTransition();
   }
-  if (current.rightOpen !== next.rightOpen) {
+  /** A review borrows the column, so it never changes the remembered open state. */
+  if (current.rightOpen !== next.rightOpen && next.rightPane !== "review") {
     writeFlag("pond.rightOpen", next.rightOpen);
   }
   if (current.agentOpen !== next.agentOpen) {
@@ -128,6 +138,7 @@ const store = new Store<ChromeState>({
     AGENT_WIDTH_MIN,
     AGENT_WIDTH_MAX,
   ),
+  reviewReturn: null,
 });
 
 export const libraryChrome = {
@@ -213,6 +224,27 @@ export const libraryChrome = {
       return commitChrome(s, { ...s, agentOpen, rightOpen, rightPane });
     });
   },
+  openReview(): void {
+    store.setState((s) => {
+      if (s.rightPane === "review" && s.rightOpen) return s;
+      return commitChrome(s, {
+        ...s,
+        rightOpen: true,
+        rightPane: "review",
+        reviewReturn: s.reviewReturn ?? {
+          rightOpen: s.rightOpen,
+          rightPane: s.rightPane,
+        },
+      });
+    });
+  },
+  closeReview(): void {
+    store.setState((s) => {
+      if (s.rightPane !== "review") return s;
+      const back = s.reviewReturn ?? { rightOpen: false, rightPane: null };
+      return commitChrome(s, { ...s, ...back, reviewReturn: null });
+    });
+  },
   /** Hiding inspector content keeps the column width stable. */
   dismissInspector(): void {
     store.setState((s) => {
@@ -235,6 +267,10 @@ export const libraryChrome = {
     });
   },
   closeRightPane(): void {
+    if (store.state.rightPane === "review") {
+      libraryChrome.closeReview();
+      return;
+    }
     store.setState((s) => {
       if (!s.rightOpen && s.rightPane === null) return s;
       return commitChrome(s, {
@@ -246,7 +282,8 @@ export const libraryChrome = {
     });
   },
   toggleRightPane(): void {
-    if (store.state.rightOpen) libraryChrome.closeRightPane();
+    if (store.state.rightPane === "review") libraryChrome.closeReview();
+    else if (store.state.rightOpen) libraryChrome.closeRightPane();
     else if (hasInspectorTarget(store.state)) libraryChrome.toggleInspector();
     else libraryChrome.setAgentOpen(true);
   },

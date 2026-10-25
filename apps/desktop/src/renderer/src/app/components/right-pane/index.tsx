@@ -14,6 +14,7 @@ import {
   useState,
 } from "react";
 import { createPortal } from "react-dom";
+import { fishIdFromPath } from "@/features/fish";
 import {
   useFolderMemberships,
   useFolders,
@@ -33,6 +34,13 @@ const AgentPane = lazy(async () => {
   return { default: module.AgentPane };
 });
 
+const ChangeReviewPanel = lazy(async () => {
+  const module = await import(
+    "@/features/agent/components/pane/change-inspector"
+  );
+  return { default: module.ChangeReviewPanel };
+});
+
 const SaveInspector = lazy(async () => {
   const module = await import("@/features/saves/components/detail/pane");
   return { default: module.SaveInspector };
@@ -49,7 +57,7 @@ function Panel({
   content,
   reduceMotion,
 }: {
-  kind: "agent" | "inspector";
+  kind: "agent" | "inspector" | "review";
   content: HTMLDivElement;
   reduceMotion: boolean;
 }) {
@@ -93,7 +101,7 @@ function Panel({
 export function RightPane() {
   const pane = useRightPane();
   const assistantPage = useRouterState({
-    select: (s) => s.location.pathname === "/assistant",
+    select: (s) => fishIdFromPath(s.location.pathname) !== null,
   });
   const saveId = useInspectorSaveId();
   const selectedIds = useSelectedSaveIds();
@@ -130,12 +138,13 @@ export function RightPane() {
       reduceMotion={reduceMotion}
       AgentContent={AgentPane}
       InspectorContent={SaveInspector}
+      ReviewContent={ChangeReviewPanel}
     />
   );
 }
 
 interface RightPaneViewProps {
-  pane: "agent" | "inspector" | null;
+  pane: "agent" | "inspector" | "review" | null;
   saveId: string | null;
   saveIds?: readonly string[];
   folders?: SaveInspectorProps["folders"];
@@ -144,6 +153,7 @@ interface RightPaneViewProps {
   reduceMotion: boolean;
   AgentContent: ComponentType;
   InspectorContent: ComponentType<SaveInspectorProps>;
+  ReviewContent?: ComponentType<{ open: boolean }>;
 }
 
 export function RightPaneView({
@@ -156,13 +166,22 @@ export function RightPaneView({
   reduceMotion,
   AgentContent,
   InspectorContent,
+  ReviewContent,
 }: RightPaneViewProps) {
   const [inspectorId, setInspectorId] = useState(saveId);
   const [agentActivated, setAgentActivated] = useState(pane === "agent");
   const [agentHost] = useState(createContentHost);
   const [inspectorHost] = useState(createContentHost);
+  const [reviewActivated, setReviewActivated] = useState(pane === "review");
+  const [reviewHost] = useState(createContentHost);
   if (saveId && saveId !== inspectorId) setInspectorId(saveId);
   if (pane === "agent" && !agentActivated) setAgentActivated(true);
+  if (pane === "review" && !reviewActivated) setReviewActivated(true);
+  const hosts = {
+    agent: agentHost,
+    inspector: inspectorHost,
+    review: reviewHost,
+  };
 
   return (
     <div className={styles.viewport}>
@@ -187,12 +206,20 @@ export function RightPaneView({
         ) : null,
         inspectorHost,
       )}
+      {createPortal(
+        reviewActivated && ReviewContent ? (
+          <Suspense fallback={null}>
+            <ReviewContent open={pane === "review"} />
+          </Suspense>
+        ) : null,
+        reviewHost,
+      )}
       <AnimatePresence initial={false} mode="sync" custom={pane !== null}>
         {pane ? (
           <Panel
             key={pane}
             kind={pane}
-            content={pane === "agent" ? agentHost : inspectorHost}
+            content={hosts[pane]}
             reduceMotion={reduceMotion}
           />
         ) : null}

@@ -1,6 +1,7 @@
 import { cn, cssVars, Window } from "@pond/ui";
 import { useRouterState } from "@tanstack/react-router";
 import type { ReactNode } from "react";
+import { fishIdFromPath } from "@/features/fish";
 import {
   AGENT_WIDTH_DEFAULT,
   AGENT_WIDTH_MAX,
@@ -32,9 +33,11 @@ function Root({ header, children, left, right, className }: RootProps) {
   const rightPane = useRightPane();
   const leftOpen = sidebarOpen && Boolean(left);
   const ownsRightPane = useRouterState({
-    select: (s) => s.location.pathname === "/assistant",
+    select: (s) => fishIdFromPath(s.location.pathname) !== null,
   });
-  const rightOpen = !ownsRightPane && rightPane !== null && Boolean(right);
+  const rightOpen =
+    (rightPane === "review" || (!ownsRightPane && rightPane !== null)) &&
+    Boolean(right);
 
   return (
     <Window.Root
@@ -68,7 +71,11 @@ function Root({ header, children, left, right, className }: RootProps) {
         defaultWidth={AGENT_WIDTH_DEFAULT}
         width={agentWidth}
         resizeLabel={
-          rightPane === "agent" ? "Resize Assistant" : "Resize Details"
+          rightPane === "agent"
+            ? "Resize Fish"
+            : rightPane === "review"
+              ? "Resize Review"
+              : "Resize Details"
         }
         collapseShortcut={
           <ShortcutKeys

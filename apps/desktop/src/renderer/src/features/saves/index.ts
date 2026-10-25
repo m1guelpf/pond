@@ -5,6 +5,7 @@ export {
 } from "./components/card/context";
 export { CardThumb } from "./components/card/media";
 export { Card } from "./components/card/parts";
+export { SaveTile } from "./components/card/tile";
 export type { LibraryCardView } from "./components/card/types";
 export {
   FolderMenu,

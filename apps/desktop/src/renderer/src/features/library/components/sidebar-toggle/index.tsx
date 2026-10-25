@@ -127,7 +127,7 @@ export function SidebarToggle({
             },
             {
               type: "checkbox",
-              label: "Assistant",
+              label: "Fish",
               checked: rightPane === "agent",
               onCheckedChange: (checked) => libraryChrome.setAgentOpen(checked),
             },

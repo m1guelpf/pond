@@ -16,6 +16,7 @@ import { useRouter, useRouterState } from "@tanstack/react-router";
 import { useState } from "react";
 import { ChromeHistoryNav } from "@/app/components/chrome-toolbar";
 import { canvasIdFromPath, useCanvas } from "@/features/canvas";
+import { fishIdFromPath, useFish } from "@/features/fish";
 import { AgentToggle } from "@/features/library/components/agent-toggle";
 import { FolderCustomizeDialog } from "@/features/library/components/folder-customize-dialog";
 import { SidebarToggle } from "@/features/library/components/sidebar-toggle";
@@ -51,7 +52,6 @@ import styles from "./styles.module.css";
 
 const ROOT_ICONS = {
   "/": IconAlbum2,
-  "/assistant": IconChatBubble,
   "/sources": IconNodes3,
   "/tags": IconBookmark,
   "/untagged": IconBookmarkSlash,
@@ -70,7 +70,9 @@ function RootIcon({ path }: { path: string }) {
         ? IconNodes3
         : path.startsWith("/canvas/")
           ? IconCanvas
-          : IconAlbum2);
+          : path.startsWith("/fish/")
+            ? IconChatBubble
+            : IconAlbum2);
   return <Icon aria-hidden="true" />;
 }
 
@@ -90,6 +92,7 @@ function Breadcrumbs() {
   const canvas = useCanvas(
     canvasIdFromPath(saveIdFromPath(pathname) ? listPath : pathname),
   );
+  const fish = useFish(fishIdFromPath(pathname));
   const sourceName = useSourceDetailName();
   const hasActiveSearch = useHasActiveSearch();
   const filteredCount = useViewFilteredCount();
@@ -100,6 +103,7 @@ function Breadcrumbs() {
     folders: folderRows,
     saveLabel: computeLabel(pathname, save),
     canvasLabel: canvas?.name,
+    fishLabel: fish?.name,
     sourceLabel: sourceName ?? undefined,
     searchResultCount: hasActiveSearch ? filteredCount : undefined,
   });
@@ -291,7 +295,7 @@ export function Toolbar() {
     select: (s) => s.location.pathname,
   });
   const hideInspector =
-    pathname === "/assistant" ||
+    fishIdFromPath(pathname) !== null ||
     pathname.startsWith("/settings") ||
     isSourceDetailPath(pathname);
   const sidebarOpen = useSidebarOpen();

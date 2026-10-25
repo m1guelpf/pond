@@ -39,12 +39,15 @@ function Header({ className, ...props }: HeaderProps) {
   return <div className={cn(styles.header, className)} {...props} />;
 }
 
-interface ItemProps extends Button.Props {}
+interface ItemProps extends Button.Props {
+  size?: "md" | "lg";
+}
 
-function Item({ className, onClick, ...props }: ItemProps) {
+function Item({ className, size = "md", onClick, ...props }: ItemProps) {
   return (
     <Button
       className={cn(styles.item, className)}
+      data-size={size}
       onClick={(event) => {
         pop(event.currentTarget.querySelector(`.${styles.icon}`));
         onClick?.(event);
@@ -58,6 +61,12 @@ interface ItemLabelProps extends React.ComponentPropsWithoutRef<"span"> {}
 
 function ItemLabel({ className, ...props }: ItemLabelProps) {
   return <span className={cn(styles["item-label"], className)} {...props} />;
+}
+
+interface ItemDetailProps extends React.ComponentPropsWithoutRef<"span"> {}
+
+function ItemDetail({ className, ...props }: ItemDetailProps) {
+  return <span className={cn(styles["item-detail"], className)} {...props} />;
 }
 
 interface ResultButtonProps extends Button.Props {}
@@ -270,6 +279,7 @@ export const Sidebar = {
   Search,
   Item,
   ItemLabel,
+  ItemDetail,
   Icon,
   Count,
   ResultButton,

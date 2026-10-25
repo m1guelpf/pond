@@ -10,12 +10,12 @@ export function AgentToggle() {
   const open = useRightPane() === "agent";
 
   return (
-    <Tooltip label="Assistant" shortcut={<ShortcutKeys id="view.agent" />}>
+    <Tooltip label="Fish" shortcut={<ShortcutKeys id="view.agent" />}>
       <Button
         icon
         size="sm"
         variant="ghost"
-        aria-label="Assistant"
+        aria-label="Fish"
         aria-pressed={open}
         onClick={() => libraryChrome.setAgentOpen(true)}
       >

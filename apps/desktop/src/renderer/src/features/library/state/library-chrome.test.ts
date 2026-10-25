@@ -42,6 +42,35 @@ describe("independent Assistant and inspector panes", () => {
     expect(libraryChrome.getState().rightPane).toBe("agent");
   });
 
+  it("borrows the right column for a change review and hands it back", async () => {
+    localStorage.setItem("pond.rightOpen", "0");
+    const { libraryChrome } = await import("./library-chrome");
+    libraryChrome.openReview();
+    expect(libraryChrome.getState()).toMatchObject({
+      rightOpen: true,
+      rightPane: "review",
+    });
+    expect(localStorage.getItem("pond.rightOpen")).toBe("0");
+    libraryChrome.closeRightPane();
+    expect(libraryChrome.getState()).toMatchObject({
+      rightOpen: false,
+      rightPane: null,
+      reviewReturn: null,
+    });
+    expect(localStorage.getItem("pond.rightOpen")).toBe("0");
+  });
+
+  it("restores the Assistant after a review that opened over it", async () => {
+    const { libraryChrome } = await import("./library-chrome");
+    libraryChrome.setAgentOpen(true);
+    libraryChrome.openReview();
+    libraryChrome.closeReview();
+    expect(libraryChrome.getState()).toMatchObject({
+      rightOpen: true,
+      rightPane: "agent",
+    });
+  });
+
   it("opens a save directly on its Properties tab", async () => {
     const { libraryChrome } = await import("./library-chrome");
     libraryChrome.openSaveDetails("first", "info");

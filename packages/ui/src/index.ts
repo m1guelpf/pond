@@ -50,6 +50,7 @@ export { Shimmer } from "./shimmer";
 export { Sidebar } from "./sidebar";
 export { Slider } from "./slider";
 export { Stepper } from "./stepper";
+export { Swap } from "./swap";
 export { Switch } from "./switch";
 export { Tab } from "./tab";
 export { Table } from "./table";

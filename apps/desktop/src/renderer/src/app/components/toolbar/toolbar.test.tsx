@@ -100,7 +100,7 @@ describe("breadcrumb toolbar", () => {
       "/",
       "/save/$saveId",
       "/sources",
-      "/assistant",
+      "/fish/$fishId",
       "/tags",
       "/untagged",
       "/recents",
@@ -127,7 +127,7 @@ describe("breadcrumb toolbar", () => {
   }
 
   it.each([
-    ["/assistant", "Assistant"],
+    ["/fish/default", "Fish"],
     ["/sources", "Sources"],
     ["/tags", "Tags"],
     ["/untagged", "Untagged"],
@@ -268,7 +268,7 @@ describe("breadcrumb toolbar", () => {
       [...document.querySelectorAll('[role="menuitemcheckbox"]')].map((item) =>
         item.textContent?.trim(),
       ),
-    ).toEqual(["Sidebar", "Assistant", "Details"]);
+    ).toEqual(["Sidebar", "Fish", "Details"]);
   });
 
   it("updates back and forward controls using the single router history", async () => {
@@ -338,27 +338,27 @@ describe("breadcrumb toolbar", () => {
     expect(router.state.location.pathname).toBe("/");
   });
 
-  it("opens Assistant from its own control", async () => {
+  it("opens Fish from its own control", async () => {
     await mount();
     expect(button("Toggle Details").getAttribute("aria-pressed")).not.toBe(
       "true",
     );
-    await act(async () => button("Assistant").click());
+    await act(async () => button("Fish").click());
     expect(libraryChrome.getState().rightPane).toBe("agent");
-    expect(button("Assistant").getAttribute("aria-pressed")).toBe("true");
+    expect(button("Fish").getAttribute("aria-pressed")).toBe("true");
     expect(button("Toggle Details").getAttribute("aria-pressed")).toBe("true");
     await act(async () => button("Toggle Details").click());
     expect(libraryChrome.getState().rightPane).toBeNull();
   });
 
-  it("closes Details without opening Assistant", async () => {
+  it("closes Details without opening Fish", async () => {
     libraryChrome.openSaveDetails("demo");
     await mount("/save/demo");
     expect(libraryChrome.getState().rightPane).toBe("inspector");
     await act(async () => button("Toggle Details").click());
     expect(libraryChrome.getState().rightPane).toBeNull();
     expect(libraryChrome.getState().inspectorSaveId).toBe("demo");
-    expect(button("Assistant").getAttribute("aria-pressed")).not.toBe("true");
+    expect(button("Fish").getAttribute("aria-pressed")).not.toBe("true");
   });
 
   it("keeps the right sidebar toggle visible and reopens Details", async () => {

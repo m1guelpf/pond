@@ -1,7 +1,9 @@
 import { isSource } from "@pond/schema/sources";
 import { Dialog } from "@pond/ui";
 import { isBlankDocumentKind } from "@shared/blank-documents";
+import { DEFAULT_FISH_ID } from "@shared/fish-contracts";
 import { useEffect } from "react";
+import { fishPath } from "@/features/fish";
 import {
   createBlankDocument,
   createNote,
@@ -180,7 +182,7 @@ export function MenuBridge() {
           return;
 
         case "nav.agent":
-          getAppRouter()?.history.push("/assistant");
+          getAppRouter()?.history.push(fishPath(DEFAULT_FISH_ID));
           return;
 
         case "nav.trash":

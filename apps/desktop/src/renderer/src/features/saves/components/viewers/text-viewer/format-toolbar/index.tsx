@@ -543,7 +543,7 @@ export function FormatToolbar() {
                     </Menu.Root>
                     <Toolbar.Separator />
                     <FormatButton
-                      label="Assistant"
+                      label="Fish"
                       onClick={() => saveLibraryBridge.setAgentOpen(true)}
                     >
                       <IconChatBubble />

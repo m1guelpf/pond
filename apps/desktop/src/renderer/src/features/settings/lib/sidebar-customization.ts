@@ -11,7 +11,6 @@ export const SIDEBAR_DESTINATION_GROUPS = [
     destinations: [
       "all",
       "uncategorized",
-      "assistant",
       "untagged",
       "recentlyAdded",
       "recentlyUsed",
@@ -34,7 +33,6 @@ export const SIDEBAR_DESTINATION_GROUPS = [
 export const SIDEBAR_DESTINATION_LABELS = {
   all: "All",
   uncategorized: "Uncategorized",
-  assistant: "Assistant",
   untagged: "Untagged",
   recentlyAdded: "Recently Added",
   recentlyUsed: "Recently Used",
