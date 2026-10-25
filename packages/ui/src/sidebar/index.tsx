@@ -14,6 +14,7 @@ import {
   useState,
 } from "react";
 import { Input } from "../input";
+import { pop } from "../shared/pop";
 import styles from "./styles.module.css";
 
 interface RootProps extends React.ComponentPropsWithoutRef<"div"> {
@@ -40,8 +41,17 @@ function Header({ className, ...props }: HeaderProps) {
 
 interface ItemProps extends Button.Props {}
 
-function Item({ className, ...props }: ItemProps) {
-  return <Button className={cn(styles.item, className)} {...props} />;
+function Item({ className, onClick, ...props }: ItemProps) {
+  return (
+    <Button
+      className={cn(styles.item, className)}
+      onClick={(event) => {
+        pop(event.currentTarget.querySelector(`.${styles.icon}`));
+        onClick?.(event);
+      }}
+      {...props}
+    />
+  );
 }
 
 interface ItemLabelProps extends React.ComponentPropsWithoutRef<"span"> {}

@@ -89,7 +89,7 @@
   margin-left: 4px;
   opacity: 0;
   transition:
-    transform var(--ds-duration-snap) var(--ds-easing-standard),
+    transform var(--ds-duration-bounce) var(--ds-easing-bounce),
     opacity var(--ds-duration-fast) var(--ds-easing-standard);
 }
 

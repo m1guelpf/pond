@@ -44,6 +44,7 @@ export { Rating } from "./rating";
 export { Reveal } from "./reveal";
 export { Select, type SelectItemSpec } from "./select";
 export { Settings } from "./settings";
+export { pop } from "./shared/pop";
 export { Shell } from "./shell";
 export { Shimmer } from "./shimmer";
 export { Sidebar } from "./sidebar";
