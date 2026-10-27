@@ -31,7 +31,6 @@ def sample(name):
 score = Score(duration=DURATION)
 sfx = score.sfx
 
-sfx.add(0.0, sample("swish"), gain=0.35, pan=-0.3)
 sfx.add(3.45, sample("tile-6"), gain=0.35, pan=0.1)
 sfx.add(4.85, sample("swish"), gain=0.3, pan=0.2)
 
