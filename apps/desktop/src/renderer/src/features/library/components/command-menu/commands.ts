@@ -244,9 +244,9 @@ export const COMMANDS: readonly CommandSpec[] = [
           id: "gallery",
           group: "App",
           label: "Open Gallery",
-          detail: "Koi cards in every state",
+          detail: "Fish and Koi cards in every state",
           icon: IconAlbum2,
-          keywords: "components cards styles dev playground",
+          keywords: "components cards styles dev playground fish animations",
           run: () => navigateTo("/gallery"),
         } satisfies CommandSpec,
         {
