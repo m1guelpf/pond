@@ -1,11 +1,12 @@
 import { Caption, defineVideo, Frame, Lockup } from "@pond/video";
 import { Chat, DOCK, FLY } from "./chat";
-import { ALL_MEDIA, ARCHIVES, MODELS, SOURCES } from "./data";
+import { ALL_MEDIA, MODELS } from "./data";
 import { Intro } from "./intro";
 import { Library } from "./library";
 import { Orbit } from "./orbit";
 import { Roll } from "./roll";
 import { School } from "./school";
+import { Substack } from "./substack";
 import { CUES, DURATION, end, start } from "./timeline";
 
 const TOP = { y: 118, size: 54 };
@@ -68,57 +69,41 @@ function Composition({ t }: { t: number }) {
         enter={start("preview") + 150}
         exit={end("preview") - 700}
       />
-      <Roll
+      <Caption
         t={t}
-        prefix="Pond now syncs"
-        items={SOURCES}
-        enter={start("sources") + 100}
-        roll={CUES.sourcesRoll}
-        step={CUES.sourcesStep}
-        exit={CUES.burst - 250}
+        {...MIDDLE}
+        text="Pond 2.0 syncs nine new sources."
+        enter={CUES.burst + 250}
+        exit={CUES.substackFly - 600}
       />
+      <Substack t={t} />
       <Orbit
         t={t}
         enter={CUES.burst}
         step={CUES.burstStep}
-        exit={end("seven") - 700}
+        exit={CUES.substackFly - 700}
+        fly={CUES.substackFly}
+      />
+      <Caption
+        t={t}
+        {...TOP}
+        text="Read Substack posts right in Pond."
+        enter={CUES.substackFly + 900}
+        exit={end("substack") - 300}
       />
       <Caption
         t={t}
         {...MIDDLE}
-        text="Seven new sources."
-        enter={CUES.burst + 300}
-        exit={end("seven") - 650}
-      />
-      <Roll
-        t={t}
-        prefix="Import your"
-        suffix="archive"
-        items={ARCHIVES}
-        enter={start("archives") + 100}
-        roll={CUES.archivesRoll}
-        step={CUES.archivesStep}
-        exit={start("archives") + 3900}
-      />
-      <Caption
-        t={t}
-        {...MIDDLE}
-        text="Every like and save keeps its original date."
-        enter={start("archives") + 4250}
-        exit={end("archives") - 450}
-      />
-      <Caption
-        t={t}
-        {...MIDDLE}
-        text="Save from the [Share menu], [Shortcuts], and [Alfred]."
-        enter={start("anywhere") + 200}
-        exit={end("anywhere") - 700}
+        text="And many more features and optimizations."
+        enter={start("more") - 200}
+        exit={end("more") - 300}
       />
       <Caption
         t={t}
         y={540}
         size={72}
         text="Pond {2.0} is out now."
+        brands={{ "2.0": { color: "var(--ds-orange-9)" } }}
         enter={start("release") + 150}
         exit={end("release") - 400}
       />

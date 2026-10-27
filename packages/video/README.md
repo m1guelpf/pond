@@ -14,6 +14,7 @@ pnpm video new <slug>                  # copy videos/starter into videos/<slug>
 pnpm video dev <slug>                  # preview at /?t=<ms> or /?play
 pnpm video stills <slug> 0,4100,9300   # frames plus 2x2 review sheets
 pnpm video render <slug>               # the full cut
+pnpm video music <slug>                # compose music.json into music.mp3
 ```
 
 Everything lands in `out/<slug>/`. `render` writes `<slug>.mp4` and the poster
@@ -30,6 +31,10 @@ isn't white.
   and score agree.
 - `score.py` builds the score with `audio/pond_score.py`. It's optional, and
   needs `numpy` and `scipy`.
+- `music.json` is an optional ElevenLabs composition plan. `pnpm video music`
+  turns it into `music.mp3`, reading `ELEVENLABS_API_KEY` from your shell or the
+  repo's `.env.local`. `render` mixes the music under the score and ducks it
+  while the score plays.
 - `public/` holds images served from `/`. It's gitignored, since the media comes
   from a local library.
 

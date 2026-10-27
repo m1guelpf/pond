@@ -90,6 +90,30 @@ const HARVESTING = [
 
 const FOLDERS = ["Interiors", "Fashion", "Cars", "Studio"];
 
+/** The 2.0 library sidebar, shared by every scene set inside the library. */
+export function LibrarySidebar({ t }: { t: number }) {
+  return (
+    <App.Sidebar
+      t={t}
+      look="2.0"
+      places={PLACES}
+      harvesting={HARVESTING}
+      smart={[{ label: "Five Stars", at: 0 }]}
+      fish={[
+        {
+          label: "Koi",
+          icon: (
+            <App.Fish t={t} species="koi" color="orange" size={16} seed={3} />
+          ),
+          count: "9:28 AM",
+        },
+      ]}
+      canvases={[{ label: "Cabin" }]}
+      folders={FOLDERS.map((label) => ({ label, at: 0 }))}
+    />
+  );
+}
+
 /** The 2.0 library on one white surface; a save opens into the viewer with Details beside it. */
 export function Library({ t }: { t: number }) {
   const rise = ease.outQuint(progress(t, CUES.windowRise, 1100));
@@ -124,24 +148,7 @@ export function Library({ t }: { t: number }) {
         filter: away > 0.01 ? `blur(${away * 10}px)` : undefined,
       }}
     >
-      <App.Sidebar
-        t={t}
-        look="2.0"
-        places={PLACES}
-        harvesting={HARVESTING}
-        smart={[{ label: "Five Stars", at: 0 }]}
-        fish={[
-          {
-            label: "Koi",
-            icon: (
-              <App.Fish t={t} species="koi" color="orange" size={16} seed={3} />
-            ),
-            count: "9:28 AM",
-          },
-        ]}
-        canvases={[{ label: "Cabin" }]}
-        folders={FOLDERS.map((label) => ({ label, at: 0 }))}
-      />
+      <LibrarySidebar t={t} />
       {leave < 1 ? (
         <div className={styles.library} style={{ opacity: 1 - leave }}>
           <App.Search />

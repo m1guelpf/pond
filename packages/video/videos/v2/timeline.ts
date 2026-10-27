@@ -1,6 +1,6 @@
 import { LOCKUP_LENGTH, scenes } from "@pond/video";
 
-const LOGO = 53700;
+const LOGO = 45730;
 
 export const { start, end } = scenes({
   meet: [0, 6000],
@@ -10,11 +10,10 @@ export const { start, end } = scenes({
   model: [18400, 23100],
   library: [23100, 27300],
   preview: [27300, 31900],
-  sources: [31900, 37600],
-  seven: [37600, 40900],
-  archives: [40900, 46500],
-  anywhere: [46500, 51100],
-  release: [51100, LOGO],
+  sources: [31900, 35400],
+  substack: [35400, 40900],
+  more: [40900, 43130],
+  release: [43130, LOGO],
   outro: [LOGO, LOGO + LOCKUP_LENGTH],
 });
 
@@ -41,11 +40,10 @@ export const CUES = {
   windowRise: 23100,
   tileClick: 27700,
   paneOpen: 27850,
-  sourcesRoll: 32800,
-  sourcesStep: 560,
-  burst: 37450,
+  burst: 32050,
   burstStep: 70,
-  archivesRoll: 41700,
-  archivesStep: 620,
+  substackFly: 34900,
+  substackRise: 34800,
+  read: 36600,
   logo: LOGO,
 } as const;

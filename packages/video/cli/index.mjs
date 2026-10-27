@@ -7,6 +7,7 @@ import {
   readdirSync,
   readFileSync,
   rmSync,
+  writeFileSync,
 } from "node:fs";
 import { createRequire } from "node:module";
 import { join, resolve } from "node:path";
@@ -22,6 +23,7 @@ const USAGE = `Usage: pnpm video <command> <slug>
   new <slug>               Copy videos/starter into videos/<slug>
   dev <slug>               Preview at /?t=<ms> or /?play
   stills <slug> <ms,...>   Capture frames and tile them 2x2 into review sheets
+  music <slug>             Compose videos/<slug>/music.json with ElevenLabs into music.mp3 (reads ELEVENLABS_API_KEY or .env.local)
   render <slug>            Capture every frame, score, mux, pull the poster, and check the edges`;
 
 const [command, slug, extra] = process.argv.slice(2);
@@ -210,6 +212,34 @@ const commands = {
     );
   },
 
+  async music() {
+    const plan = join(source, "music.json");
+    if (!existsSync(plan)) fail(`video: no videos/${slug}/music.json`);
+    const env = join(repo, ".env.local");
+    if (!process.env.ELEVENLABS_API_KEY && existsSync(env))
+      process.loadEnvFile(env);
+    const key = process.env.ELEVENLABS_API_KEY;
+    if (!key) fail("video: set ELEVENLABS_API_KEY to compose music");
+    const response = await fetch(
+      "https://api.elevenlabs.io/v1/music?output_format=mp3_48000_192",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "xi-api-key": key },
+        body: readFileSync(plan, "utf8"),
+      },
+    );
+    if (!response.ok)
+      fail(
+        `video: ElevenLabs returned ${response.status}: ${await response.text()}`,
+      );
+    const file = join(source, "music.mp3");
+    writeFileSync(file, Buffer.from(await response.arrayBuffer()));
+    const song = response.headers.get("song-id");
+    console.log(
+      `video: wrote videos/${slug}/music.mp3${song ? ` (song ${song})` : ""}`,
+    );
+  },
+
   async render() {
     await build(config());
     const picture = join(out, "picture.mp4");
@@ -222,6 +252,27 @@ const commands = {
       run("python3", [score, wav], {
         env: { ...process.env, PYTHONPATH: join(root, "audio") },
       });
+      const music = join(source, "music.mp3");
+      const seconds = stage.duration / 1000;
+      const audio = existsSync(music)
+        ? [
+            "-i",
+            music,
+            "-filter_complex",
+            `[2:a]aresample=48000,apad,atrim=0:${seconds},afade=t=out:st=${seconds - 0.3}:d=0.3,volume=0.45[bed];[1:a]volume=0.7,asplit[fx][key];[bed][key]sidechaincompress=threshold=0.03:ratio=3:attack=5:release=300[music];[fx][music]amix=inputs=2:normalize=0:duration=first,loudnorm=I=-16:TP=-1.5:LRA=11[mix]`,
+            "-map",
+            "0:v",
+            "-map",
+            "[mix]",
+          ]
+        : [
+            "-map",
+            "0:v",
+            "-map",
+            "1:a",
+            "-af",
+            "loudnorm=I=-16:TP=-1.5:LRA=11",
+          ];
       run("ffmpeg", [
         "-hide_banner",
         "-loglevel",
@@ -231,14 +282,9 @@ const commands = {
         picture,
         "-i",
         wav,
-        "-map",
-        "0:v",
-        "-map",
-        "1:a",
+        ...audio,
         "-c:v",
         "copy",
-        "-af",
-        "loudnorm=I=-16:TP=-1.5:LRA=11",
         "-ar",
         "48000",
         "-c:a",

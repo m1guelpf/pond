@@ -4,18 +4,15 @@ import {
   IconBrandBehance,
   IconBrandBluesky,
   IconBrandDribbble,
+  IconBrandGithub,
   IconBrandSavee,
+  IconBrandSubstack,
   IconBrandTumblr,
   IconBrandUnsplash,
   IconBrandVimeo,
-  IconInstagram,
   IconLmStudio,
   IconOllama,
   IconOpenAI,
-  IconReddit,
-  IconTikTok,
-  IconXTwitter,
-  IconYoutube,
 } from "@pond/icons/social-media";
 import { type FishColor, type FishSpecies, scatter } from "@pond/video";
 import type { ComponentType, SVGProps } from "react";
@@ -31,25 +28,20 @@ export interface Source {
   tile?: string;
 }
 
-/** The seven sources 2.0 syncs, in changelog order. */
+/** The nine sources 2.0 syncs. */
 export const SOURCES: Source[] = [
   { name: "Tumblr", color: "#001935", Icon: IconBrandTumblr },
-  { name: "Savee", color: "#111111", Icon: IconBrandSavee },
+  { name: "Savee", color: "#000000", Icon: IconBrandSavee },
   { name: "Behance", color: "#1769ff", Icon: IconBrandBehance },
   { name: "Vimeo", color: "#1ab7ea", Icon: IconBrandVimeo },
   { name: "Dribbble", color: "#ea4c89", Icon: IconBrandDribbble },
   { name: "Unsplash", color: "#000000", Icon: IconBrandUnsplash },
   { name: "Bluesky", color: "#1185fe", Icon: IconBrandBluesky },
+  { name: "GitHub", color: "#181717", Icon: IconBrandGithub },
+  { name: "Substack", color: "#ff6719", Icon: IconBrandSubstack },
 ];
 
-/** The apps whose data exports Import Data Export reads. */
-export const ARCHIVES: Source[] = [
-  { name: "X", color: "#0f1419", Icon: IconXTwitter },
-  { name: "Instagram", color: "#e1306c", Icon: IconInstagram },
-  { name: "TikTok", color: "#000000", Icon: IconTikTok },
-  { name: "YouTube", color: "#ff0000", Icon: IconYoutube },
-  { name: "Reddit", color: "#ff4500", Icon: IconReddit },
-];
+export const SUBSTACK = SOURCES.length - 1;
 
 /** Models a fish can run on, ending on the one that needs no key or host. */
 export const MODELS: Source[] = [
@@ -70,15 +62,17 @@ export const MODELS: Source[] = [
   },
 ];
 
-/** Where each source tile settles around the "Seven new sources" line, from stage center. */
+/** Where each source tile settles around the sources line, from stage center. */
 export const ORBIT = [
-  { x: -600, y: -250, size: 132, turn: -8 },
-  { x: -190, y: -330, size: 112, turn: 5 },
-  { x: 330, y: -290, size: 140, turn: 7 },
-  { x: 650, y: -40, size: 118, turn: -5 },
-  { x: 470, y: 250, size: 136, turn: 6 },
-  { x: -40, y: 320, size: 116, turn: -6 },
-  { x: -520, y: 220, size: 124, turn: 4 },
+  { x: -640, y: -250, size: 124, turn: -7 },
+  { x: -250, y: -330, size: 108, turn: 5 },
+  { x: 180, y: -320, size: 128, turn: 6 },
+  { x: 600, y: -240, size: 112, turn: -5 },
+  { x: 760, y: 60, size: 120, turn: 4 },
+  { x: 470, y: 270, size: 116, turn: -6 },
+  { x: -760, y: 50, size: 112, turn: 5 },
+  { x: -420, y: 280, size: 124, turn: -4 },
+  { x: 40, y: 310, size: 128, turn: 3 },
 ];
 
 export interface Member {
@@ -224,6 +218,25 @@ export const PREVIEW = {
   date: added(LOUNGE),
   tags: ["chairs", "cabin", "leather"],
   folders: ["Interiors"],
+};
+
+/** The Substack post open in the reader. */
+export const ARTICLE = {
+  title: "Rooms that work after dark",
+  subtitle: "Notes on lamps, low ceilings, and the hour after dinner.",
+  author: "Mira Okafor",
+  facts: "Weekend Reading · Apr 26, 2026 · 6 min read",
+  cover: "01KXP2R8T53GXNDE6MF689MAE4",
+  figure: "01M1Z7ARH5ZSSS2T9HF1QE5FP4",
+  body: [
+    "Most rooms are planned at noon. Someone walks the space with a tape measure, picks a paint chip in good daylight, and never comes back at nine in the evening, when the room does most of its work.",
+    "The studios I keep returning to feel planned for the hour after dinner. The light sits low, the corners go soft, and nothing on the ceiling asks for attention.",
+  ],
+  heading: "Light at the height of your hands",
+  after: [
+    "A lamp on the desk does more than a fixture overhead. It pools where you're working and leaves the rest of the room alone, so the walls fall back and the table comes forward.",
+    "If a room feels flat at night, lower the light before you add more of it.",
+  ],
 };
 
 export const ALL_MEDIA = [...new Set(LIBRARY.map((shot) => media(shot.id)))];
