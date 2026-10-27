@@ -3,6 +3,7 @@ import {
   IconBookmark,
   IconBookmarkSlash,
   IconChatBubble,
+  IconCircleInfo,
   IconCoffee,
   IconCompass,
   IconCopy,
@@ -14,7 +15,9 @@ import {
   IconFolderOpen,
   IconGear3,
   IconNodes3,
+  IconSparkle,
   IconTrashXmark,
+  IconTrophy,
   IconVersions,
   IconWindowDownload,
 } from "@pond/icons";
@@ -33,6 +36,12 @@ import { resetFilters } from "@/features/library/state/view-store";
 import { openSources, pickWatchedFolder } from "@/features/sources";
 import { getAppRouter } from "@/shared/lib/app-router";
 import { openSettings } from "@/shared/lib/open-settings";
+import { fishIntroDialog } from "@/shared/state/fish-intro";
+import {
+  isCosignVotingOpen,
+  PROMPT_IDS,
+  promptDialog,
+} from "@/shared/state/prompts";
 import { setupFlow } from "@/shared/state/setup";
 import { supportDialog } from "@/shared/state/support";
 import type { CommandSpec } from "./types";
@@ -240,6 +249,25 @@ export const COMMANDS: readonly CommandSpec[] = [
           keywords: "components cards styles dev playground",
           run: () => navigateTo("/gallery"),
         } satisfies CommandSpec,
+        {
+          id: "preview-prompt-support",
+          group: "App",
+          label: "Preview Prompt: support",
+          icon: IconSparkle,
+          keywords: "dev prompt dialog ask",
+          run: () => supportDialog.open(),
+        } satisfies CommandSpec,
+        ...PROMPT_IDS.map(
+          (id) =>
+            ({
+              id: `preview-prompt-${id}`,
+              group: "App",
+              label: `Preview Prompt: ${id}`,
+              icon: IconSparkle,
+              keywords: "dev prompt dialog ask",
+              run: () => promptDialog.open(id),
+            }) satisfies CommandSpec,
+        ),
       ]
     : []),
   {
@@ -252,6 +280,15 @@ export const COMMANDS: readonly CommandSpec[] = [
     run: () => setupFlow.open("existing"),
   },
   {
+    id: "about-fish",
+    group: "App",
+    label: "About Fish",
+    detail: "What fish do and where Assistant went",
+    icon: IconCircleInfo,
+    keywords: "assistant chat ai help intro koi",
+    run: () => fishIntroDialog.open(),
+  },
+  {
     id: "support",
     group: "App",
     label: "Support Pond",
@@ -260,4 +297,17 @@ export const COMMANDS: readonly CommandSpec[] = [
     keywords: "donate tip sponsor coffee github star",
     run: () => supportDialog.open(),
   },
+  ...(isCosignVotingOpen(Date.now())
+    ? [
+        {
+          id: "cosign",
+          group: "App",
+          label: "Vote in the Cosign Awards",
+          detail: "Raphael is up for People Design",
+          icon: IconTrophy,
+          keywords: "cosign award nomination vote raphael design",
+          run: () => promptDialog.open("cosign"),
+        } satisfies CommandSpec,
+      ]
+    : []),
 ];

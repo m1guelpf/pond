@@ -1,4 +1,13 @@
-import type { McpDeeplinkHost, McpHostId } from "../../../shared/mcp-hosts";
+import { readFile, stat } from "node:fs/promises";
+import { homedir } from "node:os";
+import { dirname } from "node:path";
+import {
+  MCP_DETECTED_CLIENTS,
+  MCP_HOST_CATALOG,
+  type McpClientStatus,
+  type McpDeeplinkHost,
+  type McpHostId,
+} from "../../../shared/mcp-hosts";
 
 export function pondMcpSnippet(
   command = process.execPath,
@@ -30,4 +39,50 @@ export function mcpInstallUrl(
 
 export function mcpDeeplinkUrl(id: McpDeeplinkHost): string | null {
   return mcpInstallUrl(id, process.execPath, ["--mcp"]);
+}
+
+/** People rename the server, so a launch path pointing at Pond counts as connected too. */
+export function configListsPond(text: string): boolean {
+  try {
+    const servers = (JSON.parse(text) as { mcpServers?: unknown }).mcpServers;
+    if (!servers || typeof servers !== "object") return false;
+    return Object.entries(servers).some(
+      ([name, server]) =>
+        name.toLowerCase() === "pond" ||
+        JSON.stringify(server).toLowerCase().includes("pond"),
+    );
+  } catch {
+    return false;
+  }
+}
+
+async function exists(path: string): Promise<boolean> {
+  try {
+    await stat(path);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/** A client's config folder exists once it has run, even before any MCP server is added. */
+export async function mcpClientStatus(): Promise<McpClientStatus[]> {
+  return Promise.all(
+    MCP_DETECTED_CLIENTS.map(async (id) => {
+      const host = MCP_HOST_CATALOG.find((entry) => entry.id === id);
+      if (!host) return { id, installed: false, connected: false };
+      const raw =
+        process.platform === "win32"
+          ? (host.windowsConfigPath ?? host.configPath)
+          : host.configPath;
+      const path = raw
+        .replace(/^~/, homedir())
+        .replace("%APPDATA%", process.env.APPDATA ?? "");
+      if (!(await exists(dirname(path)))) {
+        return { id, installed: false, connected: false };
+      }
+      const text = await readFile(path, "utf8").catch(() => "");
+      return { id, installed: true, connected: configListsPond(text) };
+    }),
+  );
 }
