@@ -29,7 +29,10 @@ import {
 import { inspect } from "@/features/saves/state/inspect";
 import { openSources } from "@/features/sources/lib/open";
 import { getAppRouter } from "@/shared/lib/app-router";
-import { isEditableTarget } from "@/shared/lib/editable-target";
+import {
+  appHotkeyBlockedByEditable,
+  isEditableTarget,
+} from "@/shared/lib/editable-target";
 import { openSettings } from "@/shared/lib/open-settings";
 import {
   bindingKeys,
@@ -117,6 +120,7 @@ export function AppHotkeys() {
     ].map((binding) => ({
       ...binding,
       callback: () => {
+        if (isEditableTarget()) return;
         if (
           document.activeElement !== document.body &&
           !collectionOwnsKeyboard()
@@ -321,6 +325,7 @@ export function AppHotkeys() {
       ...binding,
       callback: (event: KeyboardEvent) => {
         if (event.defaultPrevented || event.isComposing) return;
+        if (appHotkeyBlockedByEditable(event)) return;
         const active = document.activeElement;
         const plain = !event.metaKey && !event.ctrlKey && !event.altKey;
         if (
