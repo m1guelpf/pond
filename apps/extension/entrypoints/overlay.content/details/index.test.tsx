@@ -10,7 +10,7 @@ import type {
 } from "@/utils/messaging";
 import { Details } from ".";
 
-globalThis.IS_REACT_ACT_ENVIRONMENT = true;
+Object.assign(globalThis, { IS_REACT_ACT_ENVIRONMENT: true });
 
 const OPEN_TIMEOUT = 15_000;
 vi.setConfig({ testTimeout: OPEN_TIMEOUT * 2 });
