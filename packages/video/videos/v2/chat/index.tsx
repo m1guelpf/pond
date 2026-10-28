@@ -84,6 +84,7 @@ function offsetWithin(element: HTMLElement | null, root: HTMLElement | null) {
   while (node && node !== root) {
     x += node.offsetLeft;
     y += node.offsetTop;
+    /** SAFETY: in an HTML document an element's `offsetParent` is an `HTMLElement` or null. */
     node = node.offsetParent as HTMLElement | null;
   }
   return { x, y };

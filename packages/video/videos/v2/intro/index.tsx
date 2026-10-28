@@ -42,6 +42,7 @@ export function Intro({ t, enter, exit, dock, fly }: IntroProps) {
   useLayoutEffect(() => {
     const node = slot.current;
     if (!node) return;
+    /** SAFETY: in an HTML document an element's `offsetParent` is an `HTMLElement` or null. */
     const next = {
       x: (node.offsetParent as HTMLElement | null)?.offsetLeft ?? 0,
       y: Y,

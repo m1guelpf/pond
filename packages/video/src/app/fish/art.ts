@@ -2,7 +2,7 @@
 
 type Lobe = readonly [cx: number, cy: number, r: number];
 
-interface SpeciesArt {
+export interface SpeciesArt {
   lobes: readonly Lobe[];
   fins?: string;
   stripes?: string;
@@ -33,7 +33,7 @@ export type FishSpecies =
   | "anglerfish"
   | "sunfish";
 
-export const SPECIES_ART: Record<FishSpecies, SpeciesArt> = {
+export const SPECIES_ART = {
   koi: {
     lobes: [
       [7, 13, 4.6],
@@ -156,7 +156,7 @@ export const SPECIES_ART: Record<FishSpecies, SpeciesArt> = {
     ],
     eyeScale: 1.3,
   },
-};
+} satisfies Record<FishSpecies, SpeciesArt>;
 
 export type FishFace = "neutral" | "think" | "happy";
 

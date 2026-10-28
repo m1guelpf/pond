@@ -38,6 +38,7 @@ export function Roll({
   const measure = useRef<HTMLSpanElement>(null);
   const [widths, setWidths] = useState<number[]>([]);
   useLayoutEffect(() => {
+    /** SAFETY: the measure span renders only `<span>` children. */
     const next = [...(measure.current?.children ?? [])].map(
       (item) => (item as HTMLElement).offsetWidth,
     );

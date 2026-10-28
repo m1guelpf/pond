@@ -6,6 +6,7 @@ import {
   type FishSpecies,
   HEART_PATH,
   SPECIES_ART,
+  type SpeciesArt,
 } from "./art";
 import styles from "./styles.module.css";
 
@@ -50,7 +51,7 @@ export function Fish({
   seed = 0,
 }: FishProps) {
   const clip = `fish-${useId().replace(/[^a-zA-Z0-9_-]/g, "")}`;
-  const art = SPECIES_ART[species];
+  const art: SpeciesArt = SPECIES_ART[species];
   const phase = scatter(seed) * Math.PI * 2;
   const float = wave(t, 3600, phase) * -0.6;
   const swim = busy ? wave(t, 1200, phase) * 4 : 0;

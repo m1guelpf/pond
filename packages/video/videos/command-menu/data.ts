@@ -38,7 +38,7 @@ export const WICKER: Shot = {
   aspect: 480 / 640,
 };
 
-export const LOUNGE: Shot = {
+const LOUNGE: Shot = {
   id: "01M1Z5DRYKKHRGE6G1HJY7NTTH",
   title: "Leather lounge chair",
   source: "Cosmos",

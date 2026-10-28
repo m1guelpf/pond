@@ -49,7 +49,10 @@ interface Ranked {
 
 const KEYWORD_SAVE_WEIGHT = 0.95;
 const KEYWORD_LIMIT = 8;
-const ROOT_LIMITS: Record<string, number> = { Folders: 5, "Saved Views": 5 };
+const ROOT_LIMITS = { Folders: 5, "Saved Views": 5 } satisfies Record<
+  string,
+  number
+>;
 
 const PLACEHOLDERS = {
   root: "Search Pond or type a command…",

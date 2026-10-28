@@ -137,6 +137,7 @@ function Entry({ entry, active }: { entry: PaletteEntry; active: boolean }) {
 
 /** A save preview fitted to the row's 32px slot at the save's own aspect ratio. */
 export function PaletteThumb({ src, aspect }: { src: string; aspect: number }) {
+  /** SAFETY: React forwards custom properties, but `CSSProperties` has no `--*` keys. */
   const style = {
     "--thumb-width": Math.min(1, aspect),
     "--thumb-height": Math.min(1, 1 / aspect),
