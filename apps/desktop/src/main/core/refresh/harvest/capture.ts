@@ -157,10 +157,15 @@ async function capturePinterestPin(
   if (result.ok && result.capture && hasMedia(result.capture)) {
     return result.capture;
   }
-  if (signed?.ok) return signed.capture;
-  if (result.ok && result.capture) return result.capture;
-  if (signedIn && signed?.reason === "not_found") {
+  if (
+    signedIn &&
+    signed?.reason === "not_found" &&
+    result.reason === "harvest_failed"
+  ) {
     throw new TerminalError("pinterest item no longer exists");
+  }
+  if (result.reason === "harvest_failed" || result.reason === undefined) {
+    throw new TransientError("pinterest harvest returned no data");
   }
   throw harvestFailure(args.source, result.reason);
 }

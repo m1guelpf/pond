@@ -62,6 +62,20 @@ const RelayPinSchema = z
     images_736x: RelayImageSchema,
     images_564x: RelayImageSchema,
     images_474x: RelayImageSchema,
+    images: z
+      .record(z.string(), z.object({ url: OptionalText }).catch({}))
+      .optional()
+      .catch(undefined),
+    videos: z
+      .object({
+        video_list: z
+          .record(z.string(), z.object({ url: OptionalText }).catch({}))
+          .optional()
+          .catch(undefined),
+      })
+      .optional()
+      .catch(undefined),
+    storyPinData: z.unknown().optional().catch(undefined),
     aggregatedPinData: z
       .object({
         aggregatedStats: z
@@ -309,18 +323,7 @@ function buildCapture(sourceId: string, url: string, pin: RelayPin): Capture {
     return Object.keys(out).length > 0 ? out : undefined;
   })();
 
-  const media = ((): CaptureMedia[] => {
-    const primary = pickStr([pin.images_orig?.url, pin.imageLargeUrl]);
-    if (!primary) return [];
-    const dims = pin.images_736x ?? pin.images_564x ?? pin.images_474x;
-    const entry: CaptureMedia = {
-      url: primary,
-      type: pin.isVideo ? "video" : "image",
-    };
-    if (dims?.width !== undefined) entry.width = dims.width;
-    if (dims?.height !== undefined) entry.height = dims.height;
-    return [entry];
-  })();
+  const media = mediaFromPin(pin);
 
   const metrics = ((): CaptureMetrics | undefined => {
     const out: CaptureMetrics = {};
@@ -372,6 +375,59 @@ function buildCapture(sourceId: string, url: string, pin: RelayPin): Capture {
   if (metrics) capture.metrics = metrics;
   if (extras) capture.extras = extras;
   return capture;
+}
+
+/** Video, story, idea, and product pins often omit `images_orig`. */
+function mediaFromPin(pin: RelayPin): CaptureMedia[] {
+  const still = pickStr([
+    pin.images_orig?.url,
+    pin.images?.orig?.url,
+    pin.imageLargeUrl,
+    pin.images_736x?.url,
+    pin.images?.["736x"]?.url,
+    pin.images_564x?.url,
+    pin.images_474x?.url,
+    ...httpUrls(pin.storyPinData).filter(
+      (url) => /pinimg\.com/i.test(url) && !/\.mp4(?:$|\?)/i.test(url),
+    ),
+  ]);
+  const video = pickStr([
+    ...videoListUrls(pin.videos?.video_list),
+    ...httpUrls(pin.storyPinData).filter((url) => /\.mp4(?:$|\?)/i.test(url)),
+  ]);
+  const url = video ?? still;
+  if (!url) return [];
+  const dims = pin.images_736x ?? pin.images_564x ?? pin.images_474x;
+  const entry: CaptureMedia = {
+    url,
+    type: video ? "video" : "image",
+  };
+  if (video && still) entry.posterUrl = still;
+  if (!video && dims?.width !== undefined) entry.width = dims.width;
+  if (!video && dims?.height !== undefined) entry.height = dims.height;
+  return [entry];
+}
+
+function videoListUrls(
+  list: Record<string, { url?: string }> | undefined,
+): string[] {
+  if (!list) return [];
+  const preferred = pickStr(
+    ["V_720P", "V_EXP7", "V_HLSV3_MOBILE"].map((key) => list[key]?.url),
+  );
+  if (preferred) return [preferred];
+  return Object.values(list).flatMap((item) => (item.url ? [item.url] : []));
+}
+
+function httpUrls(value: unknown): string[] {
+  if (typeof value === "string") {
+    return /^https?:\/\//.test(value) ? [value] : [];
+  }
+  if (Array.isArray(value)) return value.flatMap(httpUrls);
+  if (value instanceof Object) {
+    return Object.values(value).flatMap(httpUrls);
+  }
+  return [];
 }
 
 function parsePinterestDate(raw: string | undefined): string | undefined {

@@ -155,3 +155,17 @@ it("keeps a pin when signed-in HTML says PinNotFound but the harvest still has m
   );
   expect(capture.media[0]?.url).toBe("https://i.pinimg.com/dom.jpg");
 });
+
+it("retries when a signed-in session cannot confirm the pin is gone", async () => {
+  await expect(
+    captureFromSource(
+      { ...base, isSignedIn: async () => true },
+      {
+        partition: "persist:test",
+        anonymousGet: htmlGet(notFoundHtml),
+        signedGet: htmlGet("<html><title>Pinterest</title></html>"),
+        harvest: harvestOf({ ok: false, reason: "harvest_failed" }),
+      },
+    ),
+  ).rejects.toBeInstanceOf(TransientError);
+});
