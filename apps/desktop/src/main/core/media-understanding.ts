@@ -1,4 +1,4 @@
-import type { LanguageModel, ModelMessage } from "ai";
+import type { LanguageModel, ModelMessage, ProviderOptions } from "ai";
 import log from "electron-log/main.js";
 import type {
   MediaUnderstandOperationalMetric,
@@ -79,6 +79,7 @@ export interface MediaUnderstandingGenerationInput {
   messages: ModelMessage[];
   maxOutputTokens: number;
   abortSignal: AbortSignal;
+  providerOptions?: ProviderOptions;
 }
 
 export type MediaUnderstandingOperationalMetric =
@@ -152,6 +153,13 @@ function failure(
   task: MediaUnderstandingTask,
 ): MediaUnderstandingError {
   return new MediaUnderstandingError(reason, task);
+}
+
+/** Ollama puts the caption in reasoning and leaves content empty when thinking uses the token budget. */
+function localReasoningOptions(
+  provider: LocalMediaModelConnection["provider"],
+): ProviderOptions {
+  return { [provider]: { reasoningEffort: "none" } };
 }
 
 function validateRequest(
@@ -278,6 +286,7 @@ async function executeTask(
       ],
       maxOutputTokens: config.maxOutputTokens,
       abortSignal: input.signal,
+      providerOptions: localReasoningOptions(connection.provider),
     });
     text = result.text;
   } catch {
