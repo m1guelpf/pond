@@ -22,6 +22,7 @@ export { parseMode, type SaveListMode } from "./lib/list";
 export {
   getLastListPath,
   getLastListSearch,
+  isSaveCollectionPath,
   listPathForLocation,
   rememberListPath,
 } from "./lib/list-path";
