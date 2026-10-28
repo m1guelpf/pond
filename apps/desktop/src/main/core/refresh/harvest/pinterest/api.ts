@@ -18,6 +18,17 @@ const FETCH_TIMEOUT_MS = 15_000;
 const OptionalText = z.string().optional().catch(undefined);
 const OptionalCount = z.number().optional().catch(undefined);
 
+const JsonValueSchema: z.ZodType<JsonValue> = z.lazy(() =>
+  z.union([
+    z.string(),
+    z.number(),
+    z.boolean(),
+    z.null(),
+    z.array(JsonValueSchema),
+    z.record(z.string(), JsonValueSchema),
+  ]),
+);
+
 const RelayUserSchema = z
   .object({
     fullName: OptionalText,
@@ -75,7 +86,7 @@ const RelayPinSchema = z
       })
       .optional()
       .catch(undefined),
-    storyPinData: z.unknown().optional().catch(undefined),
+    storyPinData: JsonValueSchema.optional().catch(undefined),
     aggregatedPinData: z
       .object({
         aggregatedStats: z
@@ -126,7 +137,7 @@ export type PinterestGet = (url: string) => Promise<Response>;
 const PIN_ACCEPT =
   "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8";
 
-function pinHeaders(userAgent: string): Record<string, string> {
+function pinHeaders(userAgent: string) {
   return {
     "user-agent": userAgent,
     accept: PIN_ACCEPT,
@@ -419,14 +430,12 @@ function videoListUrls(
   return Object.values(list).flatMap((item) => (item.url ? [item.url] : []));
 }
 
-function httpUrls(value: unknown): string[] {
-  if (typeof value === "string") {
-    return /^https?:\/\//.test(value) ? [value] : [];
-  }
+function httpUrls(value: JsonValue | undefined): string[] {
+  if (value === undefined) return [];
+  const text = z.string().safeParse(value);
+  if (text.success) return /^https?:\/\//.test(text.data) ? [text.data] : [];
   if (Array.isArray(value)) return value.flatMap(httpUrls);
-  if (value instanceof Object) {
-    return Object.values(value).flatMap(httpUrls);
-  }
+  if (value instanceof Object) return Object.values(value).flatMap(httpUrls);
   return [];
 }
 

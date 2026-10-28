@@ -8,14 +8,13 @@ function relayPage(payload: JsonObject): string {
 }
 
 function pinPayload(title: string, imageUrl?: string): JsonObject {
+  const data: JsonObject = { title };
+  if (imageUrl) data.imageLargeUrl = imageUrl;
   return {
     data: {
       v3GetPinQueryv2: {
         __typename: "PinResponse",
-        data: {
-          title,
-          ...(imageUrl ? { imageLargeUrl: imageUrl } : {}),
-        },
+        data,
       },
     },
   };

@@ -17,16 +17,13 @@ export async function writeFolderMemberships(
     raw = await readFile(path, "utf8");
   } catch (error) {
     /** Filing can race enqueue, and a missing sidecar is not a gone pin. */
-    if (isEnoent(error)) return;
+    if (error instanceof Error && "code" in error && error.code === "ENOENT")
+      return;
     throw error;
   }
   const info = StoredInfoDocSchema.parse(JSON.parse(raw));
   info.folderIds = [...new Set(folderIds)];
   await writeFile(path, JSON.stringify(info, null, 2));
-}
-
-function isEnoent(error: unknown): boolean {
-  return error instanceof Error && "code" in error && error.code === "ENOENT";
 }
 
 export function replaceFolderMemberships(
