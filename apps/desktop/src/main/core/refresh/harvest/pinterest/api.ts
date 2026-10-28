@@ -5,8 +5,10 @@ import type {
   CaptureMedia,
   CaptureMetrics,
 } from "@pond/schema/raw";
+import { session } from "electron";
 import log from "electron-log/main.js";
 import { z } from "zod";
+import { browserUserAgent } from "../../harvest-window/constants";
 
 const USER_AGENT =
   "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_0) AppleWebKit/605.1.15 " +
@@ -96,7 +98,7 @@ const RelayEnvelopeSchema = z
   })
   .catch({});
 
-type PinterestCaptureResult =
+export type PinterestCaptureResult =
   | { ok: true; capture: Capture }
   | {
       ok: false;
@@ -104,24 +106,49 @@ type PinterestCaptureResult =
       status?: number;
     };
 
+/** One GET of pin HTML, so tests can answer for the network. */
+export type PinterestGet = (url: string) => Promise<Response>;
+
+const PIN_ACCEPT =
+  "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8";
+
+function pinHeaders(userAgent: string): Record<string, string> {
+  return {
+    "user-agent": userAgent,
+    accept: PIN_ACCEPT,
+    "accept-language": "en-US,en;q=0.9",
+  };
+}
+
+const anonymousGet: PinterestGet = (url) =>
+  fetch(url, {
+    redirect: "follow",
+    headers: pinHeaders(USER_AGENT),
+    signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+  });
+
+export function pinterestSessionGet(partition: string): PinterestGet {
+  const ses = session.fromPartition(partition);
+  const ua = browserUserAgent();
+  return (url) =>
+    ses.fetch(url, {
+      redirect: "follow",
+      headers: pinHeaders(ua),
+      signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+    });
+}
+
 export async function fetchPinterestCapture({
   sourceId,
+  get = anonymousGet,
 }: {
   sourceId: string;
+  get?: PinterestGet;
 }): Promise<PinterestCaptureResult> {
   const url = `https://www.pinterest.com/pin/${sourceId}/`;
   let res: Response;
   try {
-    res = await fetch(url, {
-      redirect: "follow",
-      headers: {
-        "user-agent": USER_AGENT,
-        accept:
-          "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-        "accept-language": "en-US,en;q=0.9",
-      },
-      signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
-    });
+    res = await get(url);
   } catch (err) {
     log.warn("[pond refresh:pinterest-api] fetch failed", url, err);
     return { ok: false, reason: "fetch_failed" };
@@ -144,7 +171,7 @@ type PinPage =
   | { kind: "not_found" }
   | { kind: "no_pin" };
 
-/** Pinterest answers 200 for a removed pin and reports `PinNotFound` in the relay payload instead. */
+/** Logged-out HTML reports `PinNotFound` for secret, group, idea, and video pins that still exist. */
 export function parsePinPage(html: string): PinPage {
   const candidates: JsonObject[] = [];
   let notFound = false;
