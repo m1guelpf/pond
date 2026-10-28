@@ -1,6 +1,7 @@
 import { readFile, stat } from "node:fs/promises";
 import { homedir } from "node:os";
 import { dirname } from "node:path";
+import { z } from "zod";
 import {
   MCP_DETECTED_CLIENTS,
   MCP_HOST_CATALOG,
@@ -8,6 +9,10 @@ import {
   type McpDeeplinkHost,
   type McpHostId,
 } from "../../../shared/mcp-hosts";
+
+const McpConfigSchema = z.object({
+  mcpServers: z.record(z.string(), z.unknown()),
+});
 
 export function pondMcpSnippet(
   command = process.execPath,
@@ -44,9 +49,9 @@ export function mcpDeeplinkUrl(id: McpDeeplinkHost): string | null {
 /** People rename the server, so a launch path pointing at Pond counts as connected too. */
 export function configListsPond(text: string): boolean {
   try {
-    const servers = (JSON.parse(text) as { mcpServers?: unknown }).mcpServers;
-    if (!servers || typeof servers !== "object") return false;
-    return Object.entries(servers).some(
+    const config = McpConfigSchema.safeParse(JSON.parse(text));
+    if (!config.success) return false;
+    return Object.entries(config.data.mcpServers).some(
       ([name, server]) =>
         name.toLowerCase() === "pond" ||
         JSON.stringify(server).toLowerCase().includes("pond"),
