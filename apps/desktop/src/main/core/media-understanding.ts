@@ -1,4 +1,4 @@
-import type { LanguageModel, ModelMessage, ProviderOptions } from "ai";
+import type { LanguageModel, ModelMessage } from "ai";
 import log from "electron-log/main.js";
 import type {
   MediaUnderstandOperationalMetric,
@@ -74,12 +74,17 @@ export class MediaUnderstandingError extends Error {
   }
 }
 
+type LocalReasoningOptions = {
+  ollama?: { reasoningEffort: "none" };
+  lmstudio?: { reasoningEffort: "none" };
+};
+
 export interface MediaUnderstandingGenerationInput {
   model: LanguageModel;
   messages: ModelMessage[];
   maxOutputTokens: number;
   abortSignal: AbortSignal;
-  providerOptions?: ProviderOptions;
+  providerOptions?: LocalReasoningOptions;
 }
 
 export type MediaUnderstandingOperationalMetric =
@@ -158,8 +163,9 @@ function failure(
 /** Ollama puts the caption in reasoning and leaves content empty when thinking uses the token budget. */
 function localReasoningOptions(
   provider: LocalMediaModelConnection["provider"],
-): ProviderOptions {
-  return { [provider]: { reasoningEffort: "none" } };
+): LocalReasoningOptions {
+  if (provider === "ollama") return { ollama: { reasoningEffort: "none" } };
+  return { lmstudio: { reasoningEffort: "none" } };
 }
 
 function validateRequest(
