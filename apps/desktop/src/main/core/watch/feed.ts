@@ -67,6 +67,9 @@ const FeedSchema = z.union([
     })),
 ]);
 
+/** Feeds never need custom entities, and rejecting them keeps a public DTD or HTML in CDATA readable. */
+const DECLARES_ENTITIES = /<!ENTITY/i;
+
 type FeedResult =
   | (Extract<WatchHarvestResult, { ok: true }> & { title: string | null })
   | Extract<WatchHarvestResult, { ok: false }>;
@@ -132,7 +135,7 @@ export async function readFeed(
     if (!body) return { ok: false, reason: "unavailable" };
     const xml = decodeFeed(body, response.headers.get("content-type"));
     const { XMLParser, XMLValidator } = await import("fast-xml-parser");
-    if (/<!DOCTYPE/i.test(xml) || XMLValidator.validate(xml) !== true)
+    if (DECLARES_ENTITIES.test(xml) || XMLValidator.validate(xml) !== true)
       return { ok: false, reason: "not_found" };
     const parser = new XMLParser({
       ignoreAttributes: false,
@@ -158,8 +161,11 @@ export async function readFeed(
       const linkBase = link?.base
         ? (normalizeFeedUrl(link.base, entryBase) ?? entryBase)
         : entryBase;
-      const targetUrl = link?.href ?? entry.guid;
-      const href = targetUrl ? normalizeFeedUrl(targetUrl, linkBase) : null;
+      const href = link?.href
+        ? normalizeFeedUrl(link.href, linkBase)
+        : entry.guid
+          ? normalizeFeedUrl(entry.guid)
+          : null;
       return href ? [{ url: href }] : [];
     });
     const { candidates } = normalizeEnqueueItems(urls, "watch:web");

@@ -50,7 +50,7 @@ function usePageTitle(page: SourceFlowPage): string {
     case "watch-target":
       return watchSource
         ? watchSource === "web"
-          ? "Watch an RSS feed"
+          ? "Watch an RSS Feed"
           : `Watch on ${getSourceDef(watchSource).label}`
         : "New Watch";
   }

@@ -221,7 +221,7 @@ export function WatchTargetSection() {
       />
       <div className={styles.copy}>
         <h2 className={styles.title}>
-          {source === "web" ? "Watch an RSS feed" : `Watch on ${label}`}
+          {source === "web" ? "Watch an RSS Feed" : `Watch on ${label}`}
         </h2>
         <p className={styles.description}>
           {source === "web"

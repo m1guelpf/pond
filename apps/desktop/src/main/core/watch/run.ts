@@ -1,8 +1,8 @@
-import type { SourceSyncPrefs, WatchedAccount } from "@pond/schema/db";
+import type { Source, SourceSyncPrefs, WatchedAccount } from "@pond/schema/db";
 import { saves } from "@pond/schema/db";
 import type { SyncRunEvent } from "@pond/schema/events";
 import { WATCH_NEEDS_SESSION } from "@pond/schema/watches";
-import { and, count, eq } from "drizzle-orm";
+import { and, count, eq, inArray, or, type SQL, sql } from "drizzle-orm";
 import log from "electron-log/main.js";
 import { getDb } from "../../db";
 import { commitEvent, startSyncEvent, toErrorInfo } from "../../lib/wide-event";
@@ -18,7 +18,7 @@ import { listCosmosWatch } from "./cosmos-scrape";
 import { readFeed } from "./feed";
 import { listPinterestWatch } from "./pinterest-rss";
 import { listProfileWatch } from "./profile-scrape";
-import type { WatchHarvestResult } from "./types";
+import type { WatchEntry, WatchHarvestResult } from "./types";
 import { listYtdlpWatch } from "./ytdlp-list";
 
 interface WatchOptions {
@@ -186,7 +186,11 @@ async function runWatch(
   const knownRows = await db
     .select({ source: saves.source, sourceId: saves.sourceId })
     .from(saves)
-    .where(sourceFilter);
+    .where(
+      watch.kind === "feed"
+        ? feedEntriesFilter(harvest.entries, source)
+        : sourceFilter,
+    );
   const knownIds = new Set(knownRows.map(enqueueCandidateKey));
   const totalRow = await db
     .select({ c: count() })
@@ -292,6 +296,27 @@ async function harvestWatch(
     return listProfileWatch(source, handle, partition, kind);
   }
   return { ok: false, reason: "unknown" };
+}
+
+/** Feed entries span Sources, so match each Source's IDs to stay on the `(source, source_id)` index. */
+function feedEntriesFilter(
+  entries: readonly WatchEntry[],
+  fallback: Source,
+): SQL {
+  const idsBySource = new Map<Source, string[]>();
+  for (const entry of entries) {
+    const source = entry.source ?? fallback;
+    const ids = idsBySource.get(source);
+    if (ids) ids.push(entry.sourceId);
+    else idsBySource.set(source, [entry.sourceId]);
+  }
+  return (
+    or(
+      ...[...idsBySource].map(([source, ids]) =>
+        and(eq(saves.source, source), inArray(saves.sourceId, ids)),
+      ),
+    ) ?? sql`0`
+  );
 }
 
 async function resolveViaPartition(

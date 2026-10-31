@@ -105,7 +105,7 @@ it("submits a full link as typed", async () => {
 
 it("adds a feed Watch without a connected account", async () => {
   await render("web");
-  expect(host.textContent).toContain("Watch an RSS feed");
+  expect(host.textContent).toContain("Watch an RSS Feed");
   expect(field().placeholder).toBe("https://example.com/feed.xml");
   await type("https://example.com/Feed.xml?key=AbC");
   expect(watchButton().disabled).toBe(false);

@@ -78,6 +78,38 @@ it("does not use the RSS self link as the article link", async () => {
   ]);
 });
 
+it("uses a guid only when it is an absolute URL", async () => {
+  const xml = `<rss><channel><title>News</title>
+    <item><guid>a1b2c3-uuid</guid></item>
+    <item><guid>tag:example.com,2026:post-9</guid></item>
+    <item><guid>https://example.com/fourth</guid></item>
+  </channel></rss>`;
+  const result = await readFeed(ADDRESS, serve(xml));
+  expect(result.ok && result.entries.map((entry) => entry.url)).toEqual([
+    "https://example.com/fourth",
+  ]);
+});
+
+it.each([
+  [
+    "a public DTD",
+    `<?xml version="1.0"?>
+<!DOCTYPE rss PUBLIC "-//Netscape Communications//DTD RSS 0.91//EN" "http://my.netscape.com/publish/formats/rss-0.91.dtd">
+<rss version="0.91"><channel><title>News</title><item><link>https://example.com/article</link></item></channel></rss>`,
+  ],
+  [
+    "an HTML document in CDATA",
+    `<rss xmlns:content="http://purl.org/rss/1.0/modules/content/"><channel><title>News</title>
+  <item><link>https://example.com/article</link><content:encoded><![CDATA[<!DOCTYPE html><p>Hi</p>]]></content:encoded></item>
+</channel></rss>`,
+  ],
+])("reads a feed with %s", async (_name, xml) => {
+  const result = await readFeed(ADDRESS, serve(xml));
+  expect(result.ok && result.entries.map((entry) => entry.url)).toEqual([
+    "https://example.com/article",
+  ]);
+});
+
 it("accepts an empty feed with a title", async () => {
   expect(
     await readFeed(
